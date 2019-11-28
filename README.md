@@ -3,6 +3,9 @@
 As an internet user, so that I see a list of websites that I use frequently,
 I would like to see a list of bookmarks.
 
+As an internet user, so that I can save my favourite websites,
+I would like to add bookmarks to my list.
+
 TO SET UP DATABASE
 
 Connect to psql
