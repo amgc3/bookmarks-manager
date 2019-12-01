@@ -1,27 +1,39 @@
 require 'pg'
 
 class Bookmark
+  attr_reader :id, :title, :url
+
+  def initialize(id:, title:, url:)
+    @id = id
+    @title = title
+    @url = url
+  end
 
   def self.all
-    testing
-    #Bookmarks.all returns a PG::Connetion object
-    result = @connection.exec("SELECT * FROM bookmarks;")
-    #we run a query on that connection and this returns a PG::Result
-    result.map { |bookmark| bookmark['url'] }
-    #we map over over result to get the urls
-  end
-
-  def self.adding_url(new_url)
-    testing
-    @connection.exec("INSERT INTO bookmarks (url) VALUES('#{new_url}') ;")
-  end
-
-  def self.testing
     if ENV['RACK_ENV'] == 'test'
-      @connection = PG.connect(dbname: 'bookmark_manager_test')
+      connection = PG.connect(dbname: 'bookmark_manager_test')
     else
       # connect on the PG object passing in the database name
-      @connection = PG.connect(dbname: 'bookmark_manager')
+      connection = PG.connect(dbname: 'bookmark_manager')
     end
+      result = connection.exec("SELECT * FROM bookmarks;")
+    #we run a query on that connection and this returns a PG::Result
+      result.map { |bookmark|
+      Bookmark.new(id: bookmark['id'], title: bookmark['title'], url: bookmark['url'] ) }
   end
+
+
+# keyword arguments
+  def self.adding_url(url:, title:)
+    if ENV['RACK_ENV'] == 'test'
+      connection = PG.connect(dbname: 'bookmark_manager_test')
+    else
+      # connect on the PG object passing in the database name
+      connection = PG.connect(dbname: 'bookmark_manager')
+    end
+    result = connection.exec("INSERT INTO bookmarks (url, title) VALUES('#{url}', '#{title}') RETURNING id, title, url ;")
+    Bookmark.new(id: result[0]['id'], title: result[0]['title'], url: result[0]['url'])
 end
+end
+
+# questions: read up about keyword arguments
